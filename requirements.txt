@@ -1,0 +1,7 @@
+# Core + evaluation (CPU only): enough to reproduce every table in results/
+pandas>=2.0
+numpy>=1.24
+pyyaml>=6.0
+matplotlib>=3.7
+pillow>=10.0
+pytest>=8

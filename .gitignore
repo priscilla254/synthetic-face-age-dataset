@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+# large artefacts: images, model weights, third-party checkouts
+data/images/
+third_party/
+snapshot/
+*.pt
+*.pth
+*.zip
+.ipynb_checkpoints/

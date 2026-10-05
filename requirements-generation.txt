@@ -1,0 +1,6 @@
+# Stage 1 (SDXL) environment - needs a CUDA GPU. Not re-run for this repository.
+torch
+diffusers
+transformers
+accelerate
+safetensors

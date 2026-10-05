@@ -1,0 +1,10 @@
+# Stage 2 (AgeTransGAN) lives in its own environment: the upstream code targets an old stack
+# (README of AvLab-CV/AgeTransGAN: Python 3.6, CUDA 10.1, PyTorch 1.4, TensorFlow 2.x).
+# The original Colab notebook used torch==1.13.1 / torchvision==0.14.1 as a workaround
+# (see notebooks_original/ and agetransgan notebook in the dissertation folder).
+torch==1.13.1
+torchvision==0.14.1
+opencv-python
+dlib
+scikit-image
+scipy

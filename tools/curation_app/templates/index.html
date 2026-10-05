@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Synthetic Dataset File Browser</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f7f7f7;
+    }
+
+    h2 { margin-bottom: 1rem; }
+
+    form { margin-bottom: 1.5rem; }
+
+    select, input[type="text"], button {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+    }
+
+    button {
+      background-color: #005bbb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #004799;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.2rem;
+    }
+
+    .file-card {
+      background-color: white;
+      padding: 0.7rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+
+    .prompt {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      font-style: italic;
+      color: #444;
+    }
+
+    .pagination {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Browsing: /{{ path }}</h2>
+
+  <p><strong>🔶 Orange border:</strong> More than one variant of this identity is present</p>
+
+  <form method="get">
+    <label for="folder">Select folder:</label>
+    <select name="folder" id="folder" onchange="this.form.submit()">
+      <option value="synthetic" {% if folder == "synthetic" %}selected{% endif %}>Synthetic Dataset</option>
+      <option value="AgeTransGAN images" {% if folder == "AgeTransGAN images" %}selected{% endif %}>AgeTransGAN Images</option>
+      <option value="aged" {% if folder == "aged" %}selected{% endif %}>Aged Images</option>
+    </select>
+
+    <select name="path" onchange="this.form.submit()">
+      <option value="">-- Select ethnicity --</option>
+      {% for eth in ethnicity_options %}
+        <option value="{{ eth }}" {% if path == eth or path.startswith(eth + '/') %}selected{% endif %}>{{ eth }}</option>
+      {% endfor %}
+    </select>
+
+    {% if selected_ethnicity and age_group_options %}
+      <select name="path" onchange="this.form.submit()">
+        <option value="{{ selected_ethnicity }}">-- Select age group --</option>
+        {% for ag in age_group_options %}
+          <option value="{{ selected_ethnicity }}/{{ ag }}" {% if path == selected_ethnicity ~ '/' ~ ag %}selected{% endif %}>{{ ag }}</option>
+        {% endfor %}
+      </select>
+    {% endif %}
+
+    <button type="submit">Go</button>
+  </form>
+
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul style="color: orange;">
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <div class="file-grid">
+    {% for f in files %}
+      <div class="file-card" style="{% if f.highlight %}border: 2px solid orange;{% endif %}">
+        {% if f.is_dir %}
+          📁 <a href="/?path={{ f.subpath }}&folder={{ folder }}">{{ f.name }}/</a>
+        {% else %}
+          <strong>📄 {{ f.name }}</strong>
+
+          {% if f.is_image %}
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+              <img src="/output/{{ f.subpath }}?folder={{ folder }}" alt="{{ f.name }}">
+
+              {% if f.prompt %}
+                <div class="prompt">Prompt: {{ f.prompt }}</div>
+              {% endif %}
+
+              <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                <form method="post" action="/delete">
+                  <input type="hidden" name="file_path" value="{{ f.subpath }}">
+                  <input type="hidden" name="current_path" value="{{ path }}">
+                  <input type="hidden" name="folder" value="{{ folder }}">
+                  <input type="hidden" name="page" value="{{ page }}">
+                  <button type="submit">🗑️ Delete</button>
+                </form>
+
+                <form method="post" action="/assign_age_group">
+                  <input type="hidden" name="file_path" value="{{ f.subpath }}">
+                  <input type="hidden" name="current_path" value="{{ path }}">
+                  <input type="hidden" name="folder" value="{{ folder }}">
+                  <input type="hidden" name="page" value="{{ page }}">
+                  <select name="age_group" {% if f.disable_move %}disabled{% endif %}>
+                    {% for key, label in age_groups.items() %}
+                      <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" {% if f.disable_move %}disabled title="Limit of 2 images per identity reached"{% endif %}>
+                    Move
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="pagination">
+    {% if page > 1 %}
+      <a href="/?path={{ path }}&folder={{ folder }}&page={{ page - 1 }}"><button>⬅ Previous</button></a>
+    {% else %}
+      <button disabled>⬅ Previous</button>
+    {% endif %}
+
+    {% if has_next %}
+      <a href="/?path={{ path }}&folder={{ folder }}&page={{ page + 1 }}"><button>Next ➡</button></a>
+    {% else %}
+      <button disabled>Next ➡</button>
+    {% endif %}
+  </div>
+</body>
+</html>

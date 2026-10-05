@@ -1,0 +1,29 @@
+# Settings used for the dissertation run (values taken from the original scripts
+# and the dissertation text). Paths are relative to the repository root.
+random_seed: 42
+
+seed_generation:
+  model_id: stabilityai/stable-diffusion-xl-base-1.0
+  num_inference_steps: 50
+  guidance_scale: 7.5
+  height: 1024
+  width: 1024
+  prompt_ages: ["13", "17", "25"]
+  images_per_gender: 20
+
+aging:
+  img_size: 1024
+  n_groups: 10
+  batch_size: 16
+  snapshot: ./snapshot/140000.pt
+
+restoration:
+  fidelity_weight: 0.7
+  detection_model: retinaface_resnet50
+  codeformer_dir: third_party/CodeFormer
+
+paths:
+  seed_dir: data/images/1_seed
+  aged_dir: data/images/2_aged
+  restored_dir: data/images/3_restored
+  metadata_dir: data/metadata
